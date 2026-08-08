@@ -1,81 +1,169 @@
 # Docker NfSen
 
-Container do NfSen 1.3.11-blz.1 com nfdump 1.7.8, PHP 8.2 e Apache sobre Debian 12.
+Imagem Docker do NfSen 1.3.11-blz.1 com nfdump 1.7.8, PHP 8.2 e Apache,
+baseada no Debian 12.
+
+Código-fonte: [github.com/rguaitanele/docker-nfsen](https://github.com/rguaitanele/docker-nfsen)
+
+Os sources são configurados por variável de ambiente e a configuração do NfSen
+é regenerada sempre que o container inicia. Não é necessário editar o
+`nfsen.conf` dentro do container nem manter um `sources.json` no projeto.
 
 ## Executar
 
+Crie um `docker.sh`:
+
 ```bash
-docker compose up -d --build
+#!/bin/bash
+set -e
+
+IMAGE='rguaitanele/docker-nfsen:latest'
+
+NFSEN_SOURCES='ptt,4445,#ff0000,netflow,-s -16000:'\
+'oi,0,#0000ff,netflow:'\
+'enet,4446,#00BFFF,netflow,-s -16000:'\
+'openx,4447,#009933,netflow,-s -16000:'\
+'cdn_externo,4448,#CC6600,netflow,-s -1000:'\
+'netflix,4449,#CC6600,netflow,-s -1000:'\
+'cepain,4450,#808080,netflow,-s -16000:'\
+'ggc,4451,#CC6600,netflow,-s -1000:'\
+'qnet,4452,#CC6600,netflow,-s -16000:'\
+'vsx,4453,#CC6600,netflow,-s -16000'
+
+docker run -d \
+  --hostname nfsen \
+  --name nfsen \
+  --restart always \
+  --stop-timeout 30 \
+  -e TZ='America/Sao_Paulo' \
+  -e "NFSEN_SOURCES=$NFSEN_SOURCES" \
+  -p 8080:80 \
+  -p 4445-4453:4445-4453/udp \
+  -v /home/docker/nfsen/data:/data \
+  -v /etc/localtime:/etc/localtime:ro \
+  "$IMAGE"
 ```
 
-A interface fica em `http://localhost:8080/nfsen/`. Os dados são persistidos em
-`./data` e os coletores UDP usam as portas 4445 a 4453.
+Execute:
+
+```bash
+chmod +x docker.sh
+./docker.sh
+```
+
+A interface ficará disponível em `http://IP_DO_SERVIDOR:8080/nfsen/`.
+
+O diretório do host montado em `/data` contém os flows, perfis, gráficos e
+demais dados persistentes. Ele pode ser substituído pelo caminho usado na sua
+instalação, inclusive por um diretório de dados legado.
 
 ## Configurar sources
 
-Configure os coletores pela variável `NFSEN_SOURCES`, no mesmo formato da imagem
-legada:
+A variável `NFSEN_SOURCES` utiliza o formato:
 
 ```text
 nome,porta,cor,tipo[,optarg]:nome,porta,cor,tipo[,optarg]
 ```
 
-O quinto campo é opcional e permite configurar os argumentos do coletor,
-incluindo a rate do fluxo:
+Cada source é separado por `:`. Os campos são:
 
-```bash
-NFSEN_SOURCES="ptt,4445,#ff0000,netflow,-s -16000:cdn,4448,#CC6600,netflow,-s -1000"
+- `nome`: identificador permanente do source, com até 19 letras, números ou
+  underscores;
+- `porta`: porta UDP na qual o equipamento envia os flows;
+- `cor`: cor hexadecimal usada nos gráficos;
+- `tipo`: `netflow` ou `sflow`;
+- `optarg`: argumentos opcionais enviados ao coletor.
+
+O quinto campo é opcional. Para informar a sampling rate:
+
+```text
+borda_01,4445,#ff0000,netflow,-s -16000
 ```
 
-Entradas antigas com apenas quatro campos continuam válidas. A configuração é
-regenerada em toda inicialização, portanto basta alterar a variável e recriar o
-container.
+Sem o quinto campo, o source é criado sem `optarg` e o coletor utiliza seu
+comportamento padrão.
 
-Para arquivar um source sem perder o acesso ao histórico, mantenha o nome antigo
-e troque sua porta por `0`. O NfSen continuará exibindo esse source, mas não
-iniciará um coletor para ele. A porta liberada pode ser usada pelo nome novo:
+Ao adicionar uma porta fora do intervalo publicado no exemplo, ajuste também o
+mapeamento do `docker run`. Por exemplo, para receber na porta `4454`:
 
 ```bash
-NFSEN_SOURCES="oi,0,#0000ff,netflow:mhnet,4446,#0000ff,netflow,-s -16000"
+-p 4445-4454:4445-4454/udp
 ```
 
-Mais de um source arquivado pode usar a porta `0`; portas UDP entre `1` e
-`65535` precisam continuar exclusivas.
+## Arquivar ou renomear um source
 
-Como alternativa, é possível fornecer uma lista JSON pela variável
-`NFSEN_SOURCES_JSON` ou montar um arquivo privado e indicar seu caminho em
-`NFSEN_SOURCES_FILE`. O arquivo local `sources.json` é ignorado pelo Git e não é
-incluído na imagem.
+O nome do source identifica seus dados históricos. Para trocar uma operadora
+sem perder o histórico, preserve o nome antigo com a porta `0` e adicione o nome
+novo usando a porta liberada:
 
-Não edite `nfsen.conf` dentro do container: essa cópia é gerada automaticamente.
+```text
+oi,0,#0000ff,netflow:enet,4446,#00BFFF,netflow,-s -16000
+```
 
-Para usar um diretório de dados fora do projeto, copie `.env.example` para
-`.env` e ajuste `NFSEN_DATA_DIR`.
+A porta `0` mantém o source disponível para consulta, mas não inicia um coletor.
+Vários sources arquivados podem usar a porta `0`; portas UDP ativas precisam ser
+exclusivas.
 
-## Publicação das imagens
+Depois de adicionar ou remover sources, recrie o container. A configuração e o
+perfil `live` serão atualizados automaticamente. Perfis personalizados podem
+precisar receber o novo source pela interface do NfSen.
 
-O pipeline publica automaticamente:
+## Atualizar o container
 
-- branch `dev`: `$CI_REGISTRY_IMAGE:dev` e
-  `rguaitanele/docker-nfsen:dev`;
-- branch `main`: `$CI_REGISTRY_IMAGE:latest` e
-  `rguaitanele/docker-nfsen:latest`;
-- tags Git: `<tag>` e `latest` no GitLab Registry e no Docker Hub.
+Faça backup do diretório persistente antes de atualizações importantes. Para
+trocar a imagem sem apagar os dados:
 
-As variáveis de autenticação do Container Registry são fornecidas pelo próprio
-GitLab CI. A instância precisa ter o Container Registry habilitado; o pipeline
-interrompe com uma mensagem explícita quando `CI_REGISTRY` não estiver definido,
-evitando que o Docker tente autenticar acidentalmente no Docker Hub.
+```bash
+docker pull rguaitanele/docker-nfsen:latest
+docker stop nfsen
+docker rm nfsen
+./docker.sh
+```
 
-Para publicar no Docker Hub, configure `DOCKERHUB_USERNAME` e `DOCKERHUB_TOKEN`
-como variáveis do GitLab disponíveis para as branches e tags executadas pelo
-pipeline. Mantenha o token mascarado para não expor seu conteúdo nos logs.
+O `docker rm` remove somente o container. Os dados permanecem no diretório do
+host montado em `/data`.
 
-## Atualização segura
+Para testar a versão de desenvolvimento, altere a imagem para:
 
-As versões são fixadas pelos argumentos `NFDUMP_VERSION`, `NFSEN_REPOSITORY` e
-`NFSEN_VERSION` no Compose. A versão usada vem do fork `rguaitanele/nfsen`, que
-incorpora as correções de compatibilidade com PHP 8. O NfSen 1.3.11 requer
-nfdump 1.6.20 ou posterior e é compatível com a série 1.7.x. Antes de trocar de
-1.6.x para 1.7.x, faça backup de `./data`, pois o formato dos arquivos mudou e
-perfis históricos antigos têm limitações.
+```text
+rguaitanele/docker-nfsen:dev
+```
+
+## Tags
+
+- `dev`: versão gerada pela branch de desenvolvimento;
+- `latest`: versão estável mais recente;
+- tags de versão: versões fixas indicadas para produção e rollback.
+
+## Build local
+
+Para gerar a imagem diretamente a partir do repositório:
+
+```bash
+docker build -t docker-nfsen:local .
+```
+
+As versões podem ser alteradas com argumentos de build:
+
+```bash
+docker build \
+  --build-arg NFDUMP_VERSION=1.7.8 \
+  --build-arg NFSEN_REPOSITORY=rguaitanele/nfsen \
+  --build-arg NFSEN_VERSION=1.3.11-blz.1 \
+  -t docker-nfsen:local .
+```
+
+O fork `rguaitanele/nfsen` contém as correções de compatibilidade utilizadas por
+esta imagem.
+
+## Publicação
+
+O GitLab CI publica automaticamente a mesma imagem no GitLab Container Registry
+e no Docker Hub:
+
+- branch `dev`: tag `dev`;
+- branch `main`: tag `latest`;
+- tag Git: a tag informada e `latest`.
+
+Para a publicação no Docker Hub, configure `DOCKERHUB_USERNAME` e
+`DOCKERHUB_TOKEN` como variáveis mascaradas no GitLab CI.

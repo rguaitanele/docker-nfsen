@@ -1,5 +1,8 @@
 FROM php:8.2-apache-bookworm
 
+LABEL org.opencontainers.image.source="https://github.com/rguaitanele/docker-nfsen" \
+      org.opencontainers.image.description="NfSen com nfdump 1.7.8, PHP 8.2 e configuração persistente de sources"
+
 ARG NFDUMP_VERSION=1.7.8
 ARG NFSEN_REPOSITORY=rguaitanele/nfsen
 ARG NFSEN_VERSION=1.3.11-blz.1
