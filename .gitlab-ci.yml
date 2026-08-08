@@ -12,6 +12,12 @@ build-container:
   services:
     - name: docker:27-dind
   before_script:
+    - |
+      if [ -z "${CI_REGISTRY:-}" ] || [ -z "${CI_REGISTRY_IMAGE:-}" ]; then
+        echo "ERRO: o Container Registry não está habilitado nesta instância do GitLab."
+        echo "Configure registry_external_url no GitLab antes de executar este pipeline."
+        exit 1
+      fi
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - |

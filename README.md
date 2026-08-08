@@ -40,7 +40,9 @@ O pipeline publica automaticamente:
 - tags Git: `$CI_REGISTRY_IMAGE:<tag>` e `$CI_REGISTRY_IMAGE:latest`.
 
 As variáveis de autenticação do Container Registry são fornecidas pelo próprio
-GitLab CI.
+GitLab CI. A instância precisa ter o Container Registry habilitado; o pipeline
+interrompe com uma mensagem explícita quando `CI_REGISTRY` não estiver definido,
+evitando que o Docker tente autenticar acidentalmente no Docker Hub.
 
 ## Atualização segura
 
