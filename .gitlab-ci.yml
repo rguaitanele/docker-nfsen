@@ -5,7 +5,8 @@ variables:
   DOCKER_HOST: "tcp://docker:2375"
   DOCKER_TLS_CERTDIR: ""
   NFDUMP_VERSION: "1.7.8"
-  NFSEN_VERSION: "1.3.11"
+  NFSEN_REPOSITORY: "rguaitanele/nfsen"
+  NFSEN_VERSION: "1.3.11-blz.1"
 
 build-container:
   stage: build
@@ -33,6 +34,7 @@ build-container:
       IMAGE="$CI_REGISTRY_IMAGE:$VERSION"
       docker build --pull \
         --build-arg NFDUMP_VERSION="$NFDUMP_VERSION" \
+        --build-arg NFSEN_REPOSITORY="$NFSEN_REPOSITORY" \
         --build-arg NFSEN_VERSION="$NFSEN_VERSION" \
         --tag "$IMAGE" .
       docker push "$IMAGE"

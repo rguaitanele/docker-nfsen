@@ -1,6 +1,6 @@
 # Docker NfSen
 
-Container do NfSen 1.3.11 com nfdump 1.7.8, PHP 8.2 e Apache sobre Debian 12.
+Container do NfSen 1.3.11-blz.1 com nfdump 1.7.8, PHP 8.2 e Apache sobre Debian 12.
 
 ## Executar
 
@@ -46,7 +46,9 @@ evitando que o Docker tente autenticar acidentalmente no Docker Hub.
 
 ## Atualização segura
 
-As versões são fixadas pelos argumentos `NFDUMP_VERSION` e `NFSEN_VERSION` no
-Compose. O NfSen 1.3.11 requer nfdump 1.6.20 ou posterior e é compatível com a
-série 1.7.x. Antes de trocar de 1.6.x para 1.7.x, faça backup de `./data`, pois o
-formato dos arquivos mudou e perfis históricos antigos têm limitações.
+As versões são fixadas pelos argumentos `NFDUMP_VERSION`, `NFSEN_REPOSITORY` e
+`NFSEN_VERSION` no Compose. A versão usada vem do fork `rguaitanele/nfsen`, que
+incorpora as correções de compatibilidade com PHP 8. O NfSen 1.3.11 requer
+nfdump 1.6.20 ou posterior e é compatível com a série 1.7.x. Antes de trocar de
+1.6.x para 1.7.x, faça backup de `./data`, pois o formato dos arquivos mudou e
+perfis históricos antigos têm limitações.

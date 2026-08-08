@@ -9,7 +9,7 @@ use NfSen;
 NfConf::LoadConfig() or die "Não foi possível carregar nfsen.conf\n";
 my $hints = NfSen::LoadHints();
 
-$$$hints{'version'} = $ENV{'NFSEN_VERSION'} // '1.3.11';
+$$$hints{'version'} = $ENV{'NFSEN_VERSION'} // '1.3.11-blz.1';
 $$$hints{'nfdump'} = $ENV{'NFDUMP_MAJOR'} // 7;
 $$$hints{'subdirlayout'} = $NfConf::SUBDIRLAYOUT;
 $$$hints{'installed'} ||= time();

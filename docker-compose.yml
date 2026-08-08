@@ -4,8 +4,9 @@ services:
       context: .
       args:
         NFDUMP_VERSION: 1.7.8
-        NFSEN_VERSION: 1.3.11
-    image: ${NFSEN_IMAGE:-nfsen:1.3.11-nfdump1.7.8}
+        NFSEN_REPOSITORY: rguaitanele/nfsen
+        NFSEN_VERSION: 1.3.11-blz.1
+    image: ${NFSEN_IMAGE:-nfsen:1.3.11-blz.1-nfdump1.7.8}
     container_name: nfsen
     hostname: nfsen
     restart: unless-stopped

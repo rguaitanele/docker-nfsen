@@ -1,7 +1,0 @@
-diff --git a/libexec/Nfsync.pm b/libexec/Nfsync.pm
---- a/libexec/Nfsync.pm
-+++ b/libexec/Nfsync.pm
-@@ -48 +48,2 @@ sub seminit {
--	$semlock = semget(IPC_PRIVATE, 1, 0600 | IPC_CREAT ) || die "Can not get semaphore: $!";
-+	$semlock = semget(IPC_PRIVATE, 1, 0600 | IPC_CREAT );
-+	die "Can not get semaphore: $!" unless defined $semlock;

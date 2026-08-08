@@ -1,14 +1,12 @@
 FROM php:8.2-apache-bookworm
 
 ARG NFDUMP_VERSION=1.7.8
-ARG NFSEN_VERSION=1.3.11
+ARG NFSEN_REPOSITORY=rguaitanele/nfsen
+ARG NFSEN_VERSION=1.3.11-blz.1
 
 ENV NFSEN_SOURCES_FILE=/etc/nfsen/sources.json \
     NFSEN_VERSION=${NFSEN_VERSION} \
     NFDUMP_MAJOR=7
-
-COPY Nfsync.pm.patch /tmp/Nfsync.pm.patch
-COPY details.php.patch /tmp/details.php.patch
 
 RUN set -eux; \
     apt-get update; \
@@ -26,11 +24,9 @@ RUN set -eux; \
     make -j"$(nproc)"; \
     make install; \
     ldconfig; \
-    curl -fsSL "https://github.com/phaag/nfsen/archive/refs/tags/v.${NFSEN_VERSION}.tar.gz" -o /tmp/nfsen.tar.gz; \
+    curl -fsSL "https://github.com/${NFSEN_REPOSITORY}/archive/refs/tags/v.${NFSEN_VERSION}.tar.gz" -o /tmp/nfsen.tar.gz; \
     mkdir /opt/nfsen-src; \
     tar -xzf /tmp/nfsen.tar.gz -C /opt/nfsen-src --strip-components=1; \
-    patch -d /opt/nfsen-src -p1 < /tmp/Nfsync.pm.patch; \
-    patch -d /opt/nfsen-src -p1 < /tmp/details.php.patch; \
     rm -rf /tmp/nfdump /tmp/nfdump.tar.gz /tmp/nfsen.tar.gz; \
     docker-php-ext-install sockets; \
     apt-get purge -y --auto-remove autoconf automake bison build-essential flex libbz2-dev liblz4-dev librrd-dev libtool libzstd-dev make pkg-config; \
