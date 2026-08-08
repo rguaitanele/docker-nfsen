@@ -19,16 +19,10 @@ set -e
 
 IMAGE='rguaitanele/docker-nfsen:latest'
 
-NFSEN_SOURCES='ptt,4445,#ff0000,netflow,-s -16000:'\
-'oi,0,#0000ff,netflow:'\
-'enet,4446,#00BFFF,netflow,-s -16000:'\
-'openx,4447,#009933,netflow,-s -16000:'\
-'cdn_externo,4448,#CC6600,netflow,-s -1000:'\
-'netflix,4449,#CC6600,netflow,-s -1000:'\
-'cepain,4450,#808080,netflow,-s -16000:'\
-'ggc,4451,#CC6600,netflow,-s -1000:'\
-'qnet,4452,#CC6600,netflow,-s -16000:'\
-'vsx,4453,#CC6600,netflow,-s -16000'
+NFSEN_SOURCES='borda_01,4445,#ff0000,netflow,-s -16000:'\
+'borda_02,4446,#00BFFF,netflow,-s -16000:'\
+'concentrador_01,4447,#009933,netflow,-s -1000:'\
+'concentrador_02,4448,#CC6600,netflow,-s -1000'
 
 docker run -d \
   --hostname nfsen \
@@ -38,7 +32,7 @@ docker run -d \
   -e TZ='America/Sao_Paulo' \
   -e "NFSEN_SOURCES=$NFSEN_SOURCES" \
   -p 8080:80 \
-  -p 4445-4453:4445-4453/udp \
+  -p 4445-4448:4445-4448/udp \
   -v /home/docker/nfsen/data:/data \
   -v /etc/localtime:/etc/localtime:ro \
   "$IMAGE"
@@ -80,6 +74,9 @@ O quinto campo é opcional. Para informar a sampling rate:
 borda_01,4445,#ff0000,netflow,-s -16000
 ```
 
+As rates acima são apenas exemplos e precisam corresponder à configuração de
+sampling de cada equipamento exportador.
+
 Sem o quinto campo, o source é criado sem `optarg` e o coletor utiliza seu
 comportamento padrão.
 
@@ -92,12 +89,12 @@ mapeamento do `docker run`. Por exemplo, para receber na porta `4454`:
 
 ## Arquivar ou renomear um source
 
-O nome do source identifica seus dados históricos. Para trocar uma operadora
-sem perder o histórico, preserve o nome antigo com a porta `0` e adicione o nome
-novo usando a porta liberada:
+O nome do source identifica seus dados históricos. Para substituir ou renomear
+um equipamento sem perder o histórico, preserve o nome antigo com a porta `0` e
+adicione o nome novo usando a porta liberada:
 
 ```text
-oi,0,#0000ff,netflow:enet,4446,#00BFFF,netflow,-s -16000
+borda_antiga,0,#0000ff,netflow:borda_02,4446,#00BFFF,netflow,-s -16000
 ```
 
 A porta `0` mantém o source disponível para consulta, mas não inicia um coletor.
