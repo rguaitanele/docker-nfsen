@@ -31,6 +31,17 @@ Entradas antigas com apenas quatro campos continuam válidas. A configuração �
 regenerada em toda inicialização, portanto basta alterar a variável e recriar o
 container.
 
+Para arquivar um source sem perder o acesso ao histórico, mantenha o nome antigo
+e troque sua porta por `0`. O NfSen continuará exibindo esse source, mas não
+iniciará um coletor para ele. A porta liberada pode ser usada pelo nome novo:
+
+```bash
+NFSEN_SOURCES="oi,0,#0000ff,netflow:mhnet,4446,#0000ff,netflow,-s -16000"
+```
+
+Mais de um source arquivado pode usar a porta `0`; portas UDP entre `1` e
+`65535` precisam continuar exclusivas.
+
 Como alternativa, é possível fornecer uma lista JSON pela variável
 `NFSEN_SOURCES_JSON` ou montar um arquivo privado e indicar seu caminho em
 `NFSEN_SOURCES_FILE`. O arquivo local `sources.json` é ignorado pelo Git e não é

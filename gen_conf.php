@@ -94,7 +94,7 @@ foreach ($sources as $index => $source) {
 
     $name = (string) ($source['name'] ?? '');
     $port = filter_var($source['port'] ?? null, FILTER_VALIDATE_INT, [
-        'options' => ['min_range' => 1, 'max_range' => 65535],
+        'options' => ['min_range' => 0, 'max_range' => 65535],
     ]);
     $color = (string) ($source['color'] ?? '');
     $type = (string) ($source['type'] ?? 'netflow');
@@ -115,10 +115,14 @@ foreach ($sources as $index => $source) {
     if (preg_match('/[\r\n]/', $optarg)) {
         fail("optarg inválido no source {$name}");
     }
-    if (isset($seenPorts[$port])) {
+    // O NfSen usa a porta 0 para manter sources históricos sem iniciar coletor.
+    // Portanto, ela pode aparecer mais de uma vez; portas UDP reais são únicas.
+    if ($port !== 0 && isset($seenPorts[$port])) {
         fail("porta {$port} repetida em {$seenPorts[$port]} e {$name}");
     }
-    $seenPorts[$port] = $name;
+    if ($port !== 0) {
+        $seenPorts[$port] = $name;
+    }
 
     $fields = [
         "'port' => '".perlQuote((string) $port)."'",
