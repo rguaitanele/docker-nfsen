@@ -1,2 +1,3 @@
 #!/bin/bash
-docker run -d -h netflow --name netflow -e NFSEN_SOURCES="uplink1,9995,#ff0000,netflow:uplink2,9996,#00ff00,netflow" -p 8080:80 -p 9995-9996:9995-9996/udp -v `pwd`/data:/data netflow "$@"
+set -e
+docker compose up -d "$@"

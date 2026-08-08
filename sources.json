@@ -1,0 +1,11 @@
+[
+  { "name": "ptt",         "port": 4445, "color": "#ff0000", "type": "netflow", "optarg": "-s -16000" },
+  { "name": "oi",          "port": 4446, "color": "#0000ff", "type": "netflow", "optarg": "-s -16000" },
+  { "name": "openx",       "port": 4447, "color": "#009933", "type": "netflow", "optarg": "-s -16000" },
+  { "name": "cepain",      "port": 4450, "color": "#808080", "type": "netflow", "optarg": "-s -16000" },
+  { "name": "qnet",        "port": 4452, "color": "#CC6600", "type": "netflow", "optarg": "-s -16000" },
+  { "name": "cdn_externo", "port": 4448, "color": "#CC6600", "type": "netflow", "optarg": "-s -1000" },
+  { "name": "ggc",         "port": 4451, "color": "#CC6600", "type": "netflow", "optarg": "-s -1000" },
+  { "name": "netflix",     "port": 4449, "color": "#CC6600", "type": "netflow", "optarg": "-s -1000" },
+  { "name": "vsx",         "port": 4453, "color": "#CC6600", "type": "netflow", "optarg": "-s -16000" }
+]

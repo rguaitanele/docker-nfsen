@@ -1,0 +1,5 @@
+.git
+.gitlab-ci.yml
+.ssh_known_hosts_*
+data
+README.md

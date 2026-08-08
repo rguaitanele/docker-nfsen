@@ -1,15 +1,50 @@
-Docker NFSEN
-============
+# Docker NfSen
 
-NFSEN is a frontent to NFDUMP. It is used to collect and process NetFlow data from network devices.
+Container do NfSen 1.3.11 com nfdump 1.7.8, PHP 8.2 e Apache sobre Debian 12.
 
-How to run
-----------
+## Executar
 
-You can use ./run.sh or write your own startup:
+```bash
+docker compose up -d --build
+```
 
-	docker run -d -h netflow --name netflow -e NFSEN_SOURCES="uplink1,9995,#ff0000,netflow:uplink2,9996,#00ff00,netflow" -p 8080:80 -p 9995-9996:9995-9996/udp -v `pwd`/data:/data netflow "$@"
+A interface fica em `http://localhost:8080/nfsen/`. Os dados são persistidos em
+`./data` e os coletores UDP usam as portas 4445 a 4453.
 
-NFSEN_SOURCES defines NetFlow sources.
-Each source has 4 fields: name, port, color, type. Multiple sources are separated by collon.
-Do not forget to bind extra UDP ports and a data folder where nfdump and nfsen store their data.
+## Configurar sources
+
+Edite `sources.json`. O arquivo é montado como somente leitura e convertido em
+`/usr/local/nfsen/etc/nfsen.conf` em toda inicialização. Portanto, a configuração
+continua correta depois de recriar ou reiniciar o container.
+
+Depois de editar o arquivo:
+
+```bash
+docker compose restart nfsen
+```
+
+Também é possível fornecer o JSON diretamente pela variável
+`NFSEN_SOURCES_JSON` ou montar outro arquivo e indicar seu caminho em
+`NFSEN_SOURCES_FILE`.
+
+Não edite `nfsen.conf` dentro do container: essa cópia é gerada automaticamente.
+
+Para usar um diretório de dados fora do projeto, copie `.env.example` para
+`.env` e ajuste `NFSEN_DATA_DIR`.
+
+## Imagens no GitLab
+
+O pipeline publica automaticamente:
+
+- pushes na branch `dev`: `$CI_REGISTRY_IMAGE:dev`;
+- tags Git: `$CI_REGISTRY_IMAGE:<tag>` e `$CI_REGISTRY_IMAGE:latest`.
+
+As variáveis de autenticação do Container Registry são fornecidas pelo próprio
+GitLab CI.
+
+## Atualização segura
+
+As versões são fixadas pelos argumentos `NFDUMP_VERSION` e `NFSEN_VERSION` no
+Compose. O NfSen 1.3.11 requer nfdump 1.6.20 ou posterior e é compatível com a
+série 1.7.x. Antes de trocar de 1.6.x para 1.7.x, faça backup de `./data`, pois o
+formato dos arquivos mudou e perfis históricos antigos têm limitações.

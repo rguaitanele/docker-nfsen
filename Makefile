@@ -1,4 +1,13 @@
 build:
-	docker build --rm --no-cache=true -t netflow .
+	docker compose build
 
-.PHONY: build
+up:
+	docker compose up -d
+
+logs:
+	docker compose logs -f nfsen
+
+down:
+	docker compose down
+
+.PHONY: build up logs down

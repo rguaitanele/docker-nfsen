@@ -1,0 +1,34 @@
+stages:
+  - build
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+  NFDUMP_VERSION: "1.7.8"
+  NFSEN_VERSION: "1.3.11"
+
+build-container:
+  stage: build
+  image: docker:27-cli
+  services:
+    - name: docker:27-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        VERSION="$CI_COMMIT_TAG"
+      else
+        VERSION="dev"
+      fi
+      docker build --pull \
+        --build-arg NFDUMP_VERSION="$NFDUMP_VERSION" \
+        --build-arg NFSEN_VERSION="$NFSEN_VERSION" \
+        --tag "$CI_REGISTRY_IMAGE:$VERSION" .
+      docker push "$CI_REGISTRY_IMAGE:$VERSION"
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker tag "$CI_REGISTRY_IMAGE:$VERSION" "$CI_REGISTRY_IMAGE:latest"
+        docker push "$CI_REGISTRY_IMAGE:latest"
+      fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+    - if: '$CI_COMMIT_TAG'
