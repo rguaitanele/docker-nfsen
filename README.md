@@ -52,17 +52,24 @@ Não edite `nfsen.conf` dentro do container: essa cópia é gerada automaticamen
 Para usar um diretório de dados fora do projeto, copie `.env.example` para
 `.env` e ajuste `NFSEN_DATA_DIR`.
 
-## Imagens no GitLab
+## Publicação das imagens
 
 O pipeline publica automaticamente:
 
-- pushes na branch `dev`: `$CI_REGISTRY_IMAGE:dev`;
-- tags Git: `$CI_REGISTRY_IMAGE:<tag>` e `$CI_REGISTRY_IMAGE:latest`.
+- branch `dev`: `$CI_REGISTRY_IMAGE:dev` e
+  `rguaitanele/docker-nfsen:dev`;
+- branch `main`: `$CI_REGISTRY_IMAGE:latest` e
+  `rguaitanele/docker-nfsen:latest`;
+- tags Git: `<tag>` e `latest` no GitLab Registry e no Docker Hub.
 
 As variáveis de autenticação do Container Registry são fornecidas pelo próprio
 GitLab CI. A instância precisa ter o Container Registry habilitado; o pipeline
 interrompe com uma mensagem explícita quando `CI_REGISTRY` não estiver definido,
 evitando que o Docker tente autenticar acidentalmente no Docker Hub.
+
+Para publicar no Docker Hub, configure `DOCKERHUB_USERNAME` e `DOCKERHUB_TOKEN`
+como variáveis do GitLab disponíveis para as branches e tags executadas pelo
+pipeline. Mantenha o token mascarado para não expor seu conteúdo nos logs.
 
 ## Atualização segura
 
