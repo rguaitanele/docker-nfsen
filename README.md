@@ -13,19 +13,28 @@ A interface fica em `http://localhost:8080/nfsen/`. Os dados são persistidos em
 
 ## Configurar sources
 
-Edite `sources.json`. O arquivo é montado como somente leitura e convertido em
-`/usr/local/nfsen/etc/nfsen.conf` em toda inicialização. Portanto, a configuração
-continua correta depois de recriar ou reiniciar o container.
+Configure os coletores pela variável `NFSEN_SOURCES`, no mesmo formato da imagem
+legada:
 
-Depois de editar o arquivo:
-
-```bash
-docker compose restart nfsen
+```text
+nome,porta,cor,tipo[,optarg]:nome,porta,cor,tipo[,optarg]
 ```
 
-Também é possível fornecer o JSON diretamente pela variável
-`NFSEN_SOURCES_JSON` ou montar outro arquivo e indicar seu caminho em
-`NFSEN_SOURCES_FILE`.
+O quinto campo é opcional e permite configurar os argumentos do coletor,
+incluindo a rate do fluxo:
+
+```bash
+NFSEN_SOURCES="ptt,4445,#ff0000,netflow,-s -16000:cdn,4448,#CC6600,netflow,-s -1000"
+```
+
+Entradas antigas com apenas quatro campos continuam válidas. A configuração é
+regenerada em toda inicialização, portanto basta alterar a variável e recriar o
+container.
+
+Como alternativa, é possível fornecer uma lista JSON pela variável
+`NFSEN_SOURCES_JSON` ou montar um arquivo privado e indicar seu caminho em
+`NFSEN_SOURCES_FILE`. O arquivo local `sources.json` é ignorado pelo Git e não é
+incluído na imagem.
 
 Não edite `nfsen.conf` dentro do container: essa cópia é gerada automaticamente.
 

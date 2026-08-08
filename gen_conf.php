@@ -13,6 +13,53 @@ function perlQuote(string $value): string
     return str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
 }
 
+/**
+ * Formato legado: nome,porta,cor,tipo[,optarg]:nome,porta,cor,tipo[,optarg]
+ */
+function parseLegacySources(string $value): array
+{
+    $sources = [];
+    foreach (explode(':', $value) as $index => $entry) {
+        $entry = trim($entry);
+        if ($entry === '') {
+            fail("source vazio na posição #{$index} de NFSEN_SOURCES");
+        }
+
+        $fields = array_map('trim', explode(',', $entry, 5));
+        if (count($fields) < 4) {
+            fail("source #{$index} inválido em NFSEN_SOURCES: esperado nome,porta,cor,tipo[,optarg]");
+        }
+
+        $source = [
+            'name' => $fields[0],
+            'port' => $fields[1],
+            'color' => $fields[2],
+            'type' => $fields[3],
+        ];
+        if (isset($fields[4]) && $fields[4] !== '') {
+            $source['optarg'] = $fields[4];
+        }
+        $sources[] = $source;
+    }
+
+    return $sources;
+}
+
+function parseJsonSources(string $json): array
+{
+    try {
+        $sources = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+    } catch (JsonException $error) {
+        fail('JSON inválido: '.$error->getMessage());
+    }
+
+    if (!is_array($sources)) {
+        fail('o JSON de sources precisa ser uma lista');
+    }
+
+    return $sources;
+}
+
 $output = $argv[1] ?? null;
 if ($output === null) {
     fail('informe o caminho do arquivo de saída');
@@ -20,18 +67,18 @@ if ($output === null) {
 
 $templatePath = getenv('NFSEN_CONFIG_TEMPLATE') ?: '/etc/nfsen/nfsen.conf.template';
 $json = getenv('NFSEN_SOURCES_JSON');
-if ($json === false || trim($json) === '') {
+$legacy = getenv('NFSEN_SOURCES');
+if ($json !== false && trim($json) !== '') {
+    $sources = parseJsonSources($json);
+} elseif ($legacy !== false && trim($legacy) !== '') {
+    $sources = parseLegacySources($legacy);
+} else {
     $sourcesPath = getenv('NFSEN_SOURCES_FILE') ?: '/etc/nfsen/sources.json';
     $json = @file_get_contents($sourcesPath);
     if ($json === false) {
-        fail("não foi possível ler {$sourcesPath}");
+        fail("nenhum source configurado: defina NFSEN_SOURCES, NFSEN_SOURCES_JSON ou monte {$sourcesPath}");
     }
-}
-
-try {
-    $sources = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-} catch (JsonException $error) {
-    fail('JSON inválido: '.$error->getMessage());
+    $sources = parseJsonSources($json);
 }
 
 if (!is_array($sources) || $sources === []) {
@@ -64,6 +111,9 @@ foreach ($sources as $index => $source) {
     }
     if (!in_array($type, ['netflow', 'sflow'], true)) {
         fail("type inválido no source {$name}");
+    }
+    if (preg_match('/[\r\n]/', $optarg)) {
+        fail("optarg inválido no source {$name}");
     }
     if (isset($seenPorts[$port])) {
         fail("porta {$port} repetida em {$seenPorts[$port]} e {$name}");

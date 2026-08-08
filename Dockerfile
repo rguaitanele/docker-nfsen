@@ -33,13 +33,12 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*
 
 COPY nfsen.conf /etc/nfsen/nfsen.conf.template
-COPY sources.json /etc/nfsen/sources.json
 COPY gen_conf.php /usr/local/bin/gen-nfsen-conf
 COPY ensure_hints.pl /usr/local/bin/ensure-nfsen-hints
 COPY run.sh /usr/local/bin/docker-entrypoint
 
 RUN chmod +x /usr/local/bin/gen-nfsen-conf /usr/local/bin/ensure-nfsen-hints /usr/local/bin/docker-entrypoint; \
-    /usr/local/bin/gen-nfsen-conf /opt/nfsen-src/etc/nfsen.conf; \
+    NFSEN_SOURCES='default,4445,#0000ff,netflow' /usr/local/bin/gen-nfsen-conf /opt/nfsen-src/etc/nfsen.conf; \
     cd /opt/nfsen-src; \
     printf '\n' | ./install.pl etc/nfsen.conf; \
     ln -sf nfsen.php /var/www/nfsen/index.php; \
