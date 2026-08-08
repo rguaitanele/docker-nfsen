@@ -2,7 +2,8 @@ stages:
   - build
 
 variables:
-  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
   NFDUMP_VERSION: "1.7.8"
   NFSEN_VERSION: "1.3.11"
 
@@ -11,6 +12,8 @@ build-container:
   image: docker:27-cli
   services:
     - name: docker:27-dind
+      alias: docker
+      command: ["--tls=false"]
   before_script:
     - |
       if [ -z "${CI_REGISTRY:-}" ] || [ -z "${CI_REGISTRY_IMAGE:-}" ]; then
@@ -18,6 +21,7 @@ build-container:
         echo "Configure registry_external_url no GitLab antes de executar este pipeline."
         exit 1
       fi
+    - docker info
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - |
