@@ -8,6 +8,7 @@ ENV NFSEN_SOURCES_FILE=/etc/nfsen/sources.json \
     NFDUMP_MAJOR=7
 
 COPY Nfsync.pm.patch /tmp/Nfsync.pm.patch
+COPY details.php.patch /tmp/details.php.patch
 
 RUN set -eux; \
     apt-get update; \
@@ -29,6 +30,7 @@ RUN set -eux; \
     mkdir /opt/nfsen-src; \
     tar -xzf /tmp/nfsen.tar.gz -C /opt/nfsen-src --strip-components=1; \
     patch -d /opt/nfsen-src -p1 < /tmp/Nfsync.pm.patch; \
+    patch -d /opt/nfsen-src -p1 < /tmp/details.php.patch; \
     rm -rf /tmp/nfdump /tmp/nfdump.tar.gz /tmp/nfsen.tar.gz; \
     docker-php-ext-install sockets; \
     apt-get purge -y --auto-remove autoconf automake bison build-essential flex libbz2-dev liblz4-dev librrd-dev libtool libzstd-dev make pkg-config; \

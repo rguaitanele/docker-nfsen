@@ -1,0 +1,21 @@
+diff --git a/html/details.php b/html/details.php
+--- a/html/details.php
++++ b/html/details.php
+@@ -1167,7 +1167,7 @@ function DisplayDetails() {
+ 		foreach ( array( '', '_tcp', '_udp', '_icmp', '_other' ) as $_type ) {
+ 			if ( $statinfo ) {
+ 				$_val = ScaleValue($statinfo['packets' . $_type], $rateval);
+-				$packets_sum[$_type] += $statinfo['packets' . $_type];
++				$packets_sum[$_type] += intval($statinfo['packets' . $_type]);
+ 			} else {
+ 				$_val = $mark_char;
+ 			}
+@@ -1189,7 +1189,7 @@ function DisplayDetails() {
+ 		foreach ( array( '', '_tcp', '_udp', '_icmp', '_other' ) as $_type ) {
+ 			if ( $statinfo ) {
+ 				$_val = ScaleBytes($statinfo['traffic' . $_type], $rateval, 1000.0);
+-				$bits_sum[$_type] += $statinfo['traffic' . $_type];
++				$bits_sum[$_type] += intval($statinfo['traffic' . $_type]);
+ 			} else {
+ 				$_val = $mark_char;
+ 			}
