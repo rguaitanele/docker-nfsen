@@ -48,6 +48,7 @@ RUN chmod +x /usr/local/bin/gen-nfsen-conf /usr/local/bin/ensure-nfsen-hints /us
     cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
     printf '%s\n' 'date.timezone=America/Sao_Paulo' >> "$PHP_INI_DIR/php.ini"; \
     printf '%s\n' \
+        'RedirectMatch 302 ^/$ /nfsen/' \
         'Alias /nfsen/ /var/www/nfsen/' \
         '<Directory /var/www/nfsen>' \
         '    DirectoryIndex index.php' \
