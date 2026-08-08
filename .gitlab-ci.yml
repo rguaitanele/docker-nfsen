@@ -11,7 +11,7 @@ build-container:
   stage: build
   image: docker:27-cli
   services:
-    - name: docker:27-dind
+    - name: docker:27-dind-rootless
       alias: docker
       command: ["--tls=false"]
   before_script:
