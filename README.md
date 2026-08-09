@@ -159,7 +159,7 @@ O GitLab CI publica automaticamente a mesma imagem no GitLab Container Registry
 e no Docker Hub:
 
 - branch `dev`: tag `dev`;
-- branch `main`: tag `latest`;
+- branch `master`: tag `latest`;
 - tag Git: a tag informada e `latest`.
 
 Para a publicação no Docker Hub, configure `DOCKERHUB_USERNAME` e
