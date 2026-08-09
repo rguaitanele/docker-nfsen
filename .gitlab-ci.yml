@@ -42,6 +42,9 @@ build-container:
 
       IMAGE="$CI_REGISTRY_IMAGE:$VERSION"
       docker build --pull \
+        --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --build-arg VCS_REF="$CI_COMMIT_SHA" \
+        --build-arg IMAGE_VERSION="$VERSION" \
         --build-arg NFDUMP_VERSION="$NFDUMP_VERSION" \
         --build-arg NFSEN_REPOSITORY="$NFSEN_REPOSITORY" \
         --build-arg NFSEN_VERSION="$NFSEN_VERSION" \

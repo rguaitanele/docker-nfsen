@@ -1,11 +1,23 @@
 FROM php:8.2-apache-bookworm
 
-LABEL org.opencontainers.image.source="https://github.com/rguaitanele/docker-nfsen" \
-      org.opencontainers.image.description="NfSen com nfdump 1.7.8, PHP 8.2 e configuração persistente de sources"
-
+ARG BUILD_DATE=unknown
+ARG VCS_REF=unknown
+ARG IMAGE_VERSION=dev
 ARG NFDUMP_VERSION=1.7.8
 ARG NFSEN_REPOSITORY=rguaitanele/nfsen
 ARG NFSEN_VERSION=1.3.11-blz.1
+
+LABEL org.opencontainers.image.title="Docker NfSen" \
+      org.opencontainers.image.description="NfSen ${NFSEN_VERSION} com nfdump ${NFDUMP_VERSION}, PHP 8.2 e configuração persistente de sources" \
+      org.opencontainers.image.source="https://github.com/rguaitanele/docker-nfsen" \
+      org.opencontainers.image.url="https://hub.docker.com/r/rguaitanele/docker-nfsen" \
+      org.opencontainers.image.documentation="https://github.com/rguaitanele/docker-nfsen#readme" \
+      org.opencontainers.image.base.name="docker.io/library/php:8.2-apache-bookworm" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.version="${IMAGE_VERSION}" \
+      io.github.rguaitanele.nfsen.version="${NFSEN_VERSION}" \
+      io.github.rguaitanele.nfdump.version="${NFDUMP_VERSION}"
 
 ENV NFSEN_SOURCES_FILE=/etc/nfsen/sources.json \
     NFSEN_VERSION=${NFSEN_VERSION} \
