@@ -12,6 +12,7 @@ LABEL org.opencontainers.image.title="Docker NfSen" \
       org.opencontainers.image.source="https://github.com/rguaitanele/docker-nfsen" \
       org.opencontainers.image.url="https://hub.docker.com/r/rguaitanele/docker-nfsen" \
       org.opencontainers.image.documentation="https://github.com/rguaitanele/docker-nfsen#readme" \
+      com.docker.image.source.entrypoint="Dockerfile" \
       org.opencontainers.image.base.name="docker.io/library/php:8.2-apache-bookworm" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}" \
