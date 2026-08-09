@@ -1,26 +1,37 @@
 #!/bin/bash
+set -Eeuo pipefail
 
-# process config and install
+readonly NFSEN_BIN=/usr/local/nfsen/bin/nfsen
+readonly NFSEN_CONFIG=/usr/local/nfsen/etc/nfsen.conf
+readonly GENERATED_CONFIG=/tmp/nfsen.conf
 
-#cp /app/nfsen.conf /build/nfsen-1.3.7/etc/
-php /gen_conf.php > /build/nfsen-1.3.8/etc/nfsen.conf
-cd /build/nfsen-1.3.8
-ldconfig
-echo | ./install.pl etc/nfsen.conf
+shutdown() {
+    echo "Encerrando NfSen..."
+    "$NFSEN_BIN" stop || true
+    if [[ -n "${apache_pid:-}" ]]; then
+        kill -TERM "$apache_pid" 2>/dev/null || true
+        wait "$apache_pid" 2>/dev/null || true
+    fi
+}
+trap shutdown TERM INT EXIT
 
-# start nfsen
+gen-nfsen-conf "$GENERATED_CONFIG"
 
-/usr/local/nfsen/bin/nfsen start
+# Um volume /data vazio esconde a estrutura criada durante o build. O instalador
+# só roda na primeira inicialização do volume; nas demais, apenas reconfiguramos.
+if [[ ! -f /data/nfsen/profiles-stat/live/profile.dat ]]; then
+    echo "Inicializando o volume de dados do NfSen..."
+    install -m 0644 "$GENERATED_CONFIG" /opt/nfsen-src/etc/nfsen.conf
+    (cd /opt/nfsen-src && printf '\n' | ./install.pl etc/nfsen.conf)
+    chown -R netflow:www-data /data/nfsen
+    chmod -R g+rwX /data/nfsen
+else
+    install -m 0644 "$GENERATED_CONFIG" "$NFSEN_CONFIG"
+    printf 'y\n' | "$NFSEN_BIN" reconfig
+fi
 
-# start httpd
-
-/etc/init.d/lighttpd start
-
-# setup web
-
-ln -s nfsen.php /var/www/nfsen/index.php
-rm -rf /var/www/html
-ln -s /var/www/nfsen /var/www/html
-
-# block
-sleep infinity
+ensure-nfsen-hints
+"$NFSEN_BIN" start
+apache2-foreground &
+apache_pid=$!
+wait "$apache_pid"

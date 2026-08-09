@@ -1,0 +1,7 @@
+.git
+.gitlab-ci.yml
+.env
+.ssh_known_hosts_*
+data
+README.md
+sources.json

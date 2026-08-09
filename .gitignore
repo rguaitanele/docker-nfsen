@@ -1,0 +1,4 @@
+.env
+sources.json
+.ssh_known_hosts_*
+data/
