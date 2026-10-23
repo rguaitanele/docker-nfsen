@@ -1,6 +1,6 @@
 # Docker NfSen
 
-Imagem Docker do NfSen 1.3.11-blz.1 com nfdump 1.7.8, PHP 8.2 e Apache,
+Imagem Docker do NfSen 1.3.11-blz.1 com nfdump 1.7.8, PHP 8.2.35 e Apache,
 baseada no Debian 12.
 
 Código-fonte: [github.com/rguaitanele/docker-nfsen](https://github.com/rguaitanele/docker-nfsen)
